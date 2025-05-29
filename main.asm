@@ -19,25 +19,9 @@
 ;
 ;========================================#
 
-personaje_seleccionado db 0 ; Personaje que le toca jugar
-
-movimiento db 0
-
 ;variables de dado ╭∩╮(-_-)╭∩╮
 semilla db 7
 dado db 0
-
-; - - - REGISTROS DE JUGADORES - - -
-
-registro_pj1 db 0
-
-registro_pj2 db 0
-
-registro_pj3 db 0
-
-registro_pj4 db 0
-
-registro_pj5 db 0
 
 ;╭∩╮(-_-)╭∩╮
 act_semilla:
@@ -59,176 +43,44 @@ generar_dado:
     mov [dado], al ; mueve al a la variable dado
     ret
 
-; - - - COMPARACIÓN DE JUGADORES - - -
+; - - - TABLA DE REGISTRO - - -
+section .data
+    registro_table dd registro_pj1, registro_pj2, registro_pj3, registro_pj4, registro_pj5
 
+section .text
+
+; - - - INICIO DE MOVIMIENTO
 main:
-    call generar_dado
-    cmp [personajes], 0
-        je jugadores_1
+    mov eax, [personajes]
+    cmp eax, 5 ; Verifica que el número de jugadores sea válido (0 a 4)
+    ja fin ; si es mayor que 4, termina
 
-    cmp [personajes], 1
-        je jugadores_2
+    call turno_jugador 
+    jmp main
 
-    cmp [personajes], 2
-        je jugadores_3
+turno_jugador:
+    
+    call generar_dado ; Llama al generador de dado
 
-    cmp [personajes], 3
-        je jugadores_4
+    mov eax, [dado]
+    mov [movimiento], eax ; Guarda el resultado del dado en la variable "movimiento"
 
-    cmp [personajes], 4
-        je jugadores_5
+    mov ecx, [personaje_seleccionado]     ; ecx = índice de jugador actual
 
-; - - - 1 JUGADORES - - -
+    mov ebx, [registro_table + ecx*4]     ; ebx = dirección del registro de jugador 
+    add [ebx], eax                        ; suma el dado al registro
 
-jugadores_1:
-cmp [personaje_seleccionado], 0
-je movimiento_1
+    inc ecx ; Avanza al siguiente jugador
+    cmp ecx, [personajes]
+    jl seguir
+    xor ecx, ecx                          ; si ya jugaron todos, vuelve al jugador 0
 
-movimiento_1:
-mov [movimiento], [dado]
-add [registro_pj1], [dado]
-ret jugadores_1
+seguir:
+    mov [personaje_seleccionado], ecx
+    ret
 
-; - - - 2 JUGADORES - - -
-
-jugadores_2:
-cmp [personaje_seleccionado], 0
-    je movimiento_1
-
-cmp [personaje_seleccionado], 1
-    je movimiento_2
-
-movimiento_1:
-    mov [movimiento], [dado]
-    add [registro_pj1], [dado]
-    add [personaje_seleccionado], 1
-    ret jugadores_2
-
-movimiento_2:
-    mov [movimiento], [dado]
-    add [registro_pj2], [dado]
-    mov [personaje_seleccionado], 0
-    ret jugadores_2
-
-; - - - 3 JUGADORES - - -
-
-jugadores_3:
-cmp [personaje_seleccionado], 0
-    je movimiento_1
-
-cmp [personaje_seleccionado], 1
-    je movimiento_2
-
-cmp [personaje_seleccionado], 2
-    je movimiento_3
-
-
-movimiento_1:
-    mov [movimiento], [dado]
-    add [registro_pj1], [dado]
-    add [personaje_seleccionado], 1
-    ret jugadores_3
-
-movimiento_2:
-    mov [movimiento], [dado]
-    add [registro_pj2], [dado]
-    add [personaje_seleccionado], 1
-    ret jugadores_3
-
-movimiento_3:
-    mov [movimiento], [dado]
-    add [registro_pj3], [dado]
-    mov [personaje_seleccionado], 0
-    ret jugadores_3
-
-; - - - 4 JUGADORES - - -
-
-jugadores_4:
-cmp [personaje_seleccionado], 0
-    je movimiento_1
-
-cmp [personaje_seleccionado], 1
-    je movimiento_2
-
-cmp [personaje_seleccionado], 2
-    je movimiento_3
-
-cmp [personaje_seleccionado], 3
-    je movimiento_4
-
-
-movimiento_1:
-    mov [movimiento], [dado]
-    add [registro_pj1], [dado]
-    add [personaje_seleccionado], 1
-    ret jugadores_4
-
-movimiento_2:
-    mov [movimiento], [dado]
-    add [registro_pj2], [dado]
-    add [personaje_seleccionado], 1
-    ret jugadores_4
-
-movimiento_3:
-    mov [movimiento], [dado]
-    add [registro_pj3], [dado]
-    add [personaje_seleccionado], 1
-    ret jugadores_4
-
-movimiento_4:
-    mov [movimiento], [dado]
-    add [registro_pj4], [dado]
-    mov [personaje_seleccionado], 0
-    ret jugadores_4
-
-; - - - 5 JUGADORES - - -
-
-jugadores_5:
-cmp [personaje_seleccionado], 0
-    je movimiento_1
-
-cmp [personaje_seleccionado], 1
-    je movimiento_2
-
-cmp [personaje_seleccionado], 2
-    je movimiento_3
-
-cmp [personaje_seleccionado], 3
-    je movimiento_4
-
-cmp [personaje_seleccionado], 4
-    je movimiento_5
-
-
-movimiento_1:
-    mov [movimiento], [dado]
-    add [registro_pj1], [dado]
-    add [personaje_seleccionado], 1
-    ret jugadores_5
-
-movimiento_2:
-    mov [movimiento], [dado]
-    add [registro_pj2], [dado]
-    add [personaje_seleccionado], 1
-    ret jugadores_5
-
-movimiento_3:
-    mov [movimiento], [dado]
-    add [registro_pj3], [dado]
-    add [personaje_seleccionado], 1
-    ret jugadores_5
-
-movimiento_4:
-    mov [movimiento], [dado]
-    add [registro_pj4], [dado]
-    add [personaje_seleccionado], 1
-    ret jugadores_5
-
-movimiento_5:
-    mov [movimiento], [dado]
-    add [registro_pj5], [dado]
-    mov [personaje_seleccionado], 0
-    ret jugadores_5
+fin:
+    ret ; todavia esta en proceso
 
 ;╭∩╮(-_-)╭∩╮
 tablero db 37, 0, 0, 10, 0, 0, 0, 21, 0, 0
