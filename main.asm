@@ -19,10 +19,6 @@
 ;
 ;========================================#
 
-;variables de dado ╭∩╮(-_-)╭∩╮
-semilla db 7
-dado db 0
-
 ;╭∩╮(-_-)╭∩╮
 act_semilla:
     mov ah, 0 
@@ -43,9 +39,38 @@ generar_dado:
     mov [dado], al ; mueve al a la variable dado
     ret
 
-; - - - TABLA DE REGISTRO - - -
+
 section .data
+    ; Número total de jugadores 
+    personajes dd 4
+
+    ; Índice del jugador actual (inicia en 0)
+    personaje_seleccionado dd 0
+
+    ; Registro de los movimientos de los jugadores
+    registro_pj1 dd 0
+    registro_pj2 dd 0
+    registro_pj3 dd 0
+    registro_pj4 dd 0
+    registro_pj5 dd 0
+
+    ; Posición actual de cada jugador en el tablero
+    movimiento_pj1 dd 0
+    movimiento_pj2 dd 0
+    movimiento_pj3 dd 0
+    movimiento_pj4 dd 0
+    movimiento_pj5 dd 0
+
+    ;variables de dado ╭∩╮(-_-)╭∩╮
+    semilla db 7
+    dado db 0
+
+    ; Resultado del dado actual
+    movimiento dd 0
+
+    ; Tablas para acceso según jugador
     registro_table dd registro_pj1, registro_pj2, registro_pj3, registro_pj4, registro_pj5
+    movimiento_table dd movimiento_pj1, movimiento_pj2, movimiento_pj3, movimiento_pj4, movimiento_pj5
 
 section .text
 
@@ -59,28 +84,55 @@ main:
     jmp main
 
 turno_jugador:
-    
-    call generar_dado ; Llama al generador de dado
+
+    call generar_dado
 
     mov eax, [dado]
-    mov [movimiento], eax ; Guarda el resultado del dado en la variable "movimiento"
+    mov [movimiento], eax                ; Guarda el resultado de dado en [movimiento]
 
-    mov ecx, [personaje_seleccionado]     ; ecx = índice de jugador actual
+    mov ecx, [personaje_seleccionado]    ; ecx = índice de jugador actual
 
-    mov ebx, [registro_table + ecx*4]     ; ebx = dirección del registro de jugador 
-    add [ebx], eax                        ; suma el dado al registro
+    ; --- ACTUALIZAR EL REGISTRO DE LOS JUGADORES ---
+    mov ebx, [registro_table + ecx*4]    
+    add [ebx], eax ; Añade el resultado del dado en la dirección de ebx(tabla de registro)
 
-    inc ecx ; Avanza al siguiente jugador
+    ; --- AVANZAR DE POSICIÓN ---
+    mov ebx, [movimiento_table + ecx*4]  
+    add [ebx], eax ; Añade el resultado del dado en la dirección de ebx(tabla de movimiento)
+
+    ; --- Obtener efecto de la casilla actual ---
+    mov edx, [ebx]                       ; edx = posición actual
+    cmp edx, 99                          ; Posición actual <= casilla 100
+    ja fuera_del_tablero                 ; Fuera del tablero
+    movsx edx, byte [tablero + edx]      ; edx = efecto de la casilla
+
+    ; --- Aplicar efecto de casilla ---
+    add [ebx], edx
+
+    ; --- JUGADOR MENOR QUE 0 ---
+    cmp dword [ebx], 0
+    jge continuar
+    mov dword [ebx], 0                   ; Si se pasó por debajo de 0, regresa a 0
+
+continuar:
+    ; Avanzar al siguiente jugador
+    inc ecx
     cmp ecx, [personajes]
     jl seguir
-    xor ecx, ecx                          ; si ya jugaron todos, vuelve al jugador 0
+    xor ecx, ecx                          ; volver al jugador 0 si todos jugaron
 
 seguir:
     mov [personaje_seleccionado], ecx
     ret
 
+fuera_del_tablero:
+    ; Si se pasa del tablero, lo dejamos en la última casilla
+    mov dword [ebx], 99
+    jmp continuar
+
 fin:
     ret ; todavia esta en proceso
+
 
 ;╭∩╮(-_-)╭∩╮
 tablero db 37, 0, 0, 10, 0, 0, 0, 21, 0, 0
