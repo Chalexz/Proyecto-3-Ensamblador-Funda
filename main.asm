@@ -49,19 +49,14 @@ section .data
     ; Índice del jugador actual (inicia en 0)
     personaje_seleccionado dd 0
 
-    ; Registro de los movimientos de los jugadores
-    registro_turno_pj1 dd 0
-    registro_turno_pj2 dd 0
-    registro_turno_pj3 dd 0
-    registro_tunro_pj4 dd 0
-    registro_tunro_pj5 dd 0
 
     ; Posición actual de cada jugador en el tablero
-    movimiento_pj1 dd 1
+    movimiento_pj1 dd 0
     movimiento_pj2 dd 0
     movimiento_pj3 dd 0
     movimiento_pj4 dd 0
     movimiento_pj5 dd 0
+
 
     ; Variables de dado ╭∩╮(-_-)╭∩╮
     semilla db 7
@@ -213,7 +208,7 @@ section .data
            db "'-------'",10,0
     
     ;╭∩╮(-_-)╭∩╮
-    tablero db 37,0, 0, 10, 0, 0, 0, 21, 0, 0  ;[i][j] 
+    tablero db 37,0, 0, 10, 0, 0, 0, 21, 0, 0  
             db 0, 0, 0, 0, 0, 0, -10, 0, 0, 0
             db 0, 0, 0, 16, 0, 0, 0, 0, 56, 0
             db 0, 0, 0, -22, 0, 0, 0, 0, 0, 0
@@ -241,16 +236,11 @@ section .data
     lista_skane dd snake01, snake02, snake01, snake02
     lista_dellar dd escalera01, escalera02, escalera03
 
-    mensa_debug db "Prueba",10,0
-    mensa_debug2 db "Prueba2",10,0
-
-
 section .bss
     opcion resb 1
     ultima_cara_dado resb 1
     posicion_jugador resb 1
-
-
+    turno resb 1
 
 
 section .text
@@ -290,17 +280,11 @@ menu_selccion_jugadores:
     mov eax, [opcion]
     mov [personajes], eax
 
-    push dword [personajes]
-    push formato_opcion
-    call printf
-    add esp, 8
 
     call vaciar_buffer
     
-    ;ret
-    jmp tirar_dado
-    ;call turno_jugador 
 
+    jmp tirar_dado
 
 imprimir_menu_seleccion:
     push mensaje_menu_seleccion_jugadores
@@ -361,7 +345,6 @@ tirar_dado:
     mov ecx, 6
 
 animacion_dado:
-    ; Guarda ECX en la pila para preservarlo
     push ecx    
 
     call limpiar_cmd          
@@ -378,10 +361,6 @@ animacion_dado:
     pop ecx               
 
     loop animacion_dado
-
-    ; push dword 1
-    ; call sleep
-    ; add esp, 4
 
     call limpiar_cmd
     jmp indentificar_cara_dado
@@ -446,24 +425,10 @@ imprimir_menu:
     call printf
     add esp, 8
 
-
-
-
-
-
+    ret
 
 indentificar_cara_dado:
     call generar_dado
-
-    ; movzx eax, byte [dado]
-    ; push eax
-    ; push formato_opcion
-    ; call printf
-    ; add esp, 8
-
-    ; push mensa_debug2
-    ; call printf
-    ; add esp, 4
 
     cmp byte [dado], 1
     je cara_uno
@@ -537,88 +502,103 @@ cara_cinco:
     add esp, 4
 
 
-imprimir_mensaje_turno: 
-   
+agregar_movimiento_uno:
+    mov eax, [movimiento]
+    add [movimiento_pj1], eax
+    mov ebx, [movimiento_pj1]
 
-    ; cmp ecx, 0
-    ; je total_turnos_jugador_uno
-    ; cmp ecx, 1
-    ; je total_turnos_jugador_uno
-    ; cmp ecx, 2
-    ; je total_turnos_jugador_uno
-    ; cmp ecx, 3
-    ; je total_turnos_jugador_uno
-    ; cmp ecx, 4
-    ; je total_turnos_jugador_uno
-    ; push ecx
+    jmp regreso_flujo_movimientos
+agregar_movimiento_dos:
+    mov eax, [movimiento]
+    add [movimiento_pj2], eax
+    mov ebx, [movimiento_pj2]
 
-    ; push formato_opcion
-    ; call printf
-    ; add esp, 4
+    jmp regreso_flujo_movimientos
+agregar_movimiento_tres:
+    mov eax, [movimiento]
+    add [movimiento_pj3], eax
+    mov ebx, [movimiento_pj3]
+
+    jmp regreso_flujo_movimientos
+agregar_movimiento_cuatro:
+    mov eax, [movimiento]
+    add [movimiento_pj4], eax
+    mov ebx, [movimiento_pj4]
+
+    jmp regreso_flujo_movimientos
+agregar_movimiento_cinco:
+    mov eax, [movimiento]
+    add [movimiento_pj5], eax
+    mov ebx, [movimiento_pj5]
+
+    jmp regreso_flujo_movimientos 
+
+agregar_turno_uno:
+    mov eax, 1
+    add [turnos_jugador_uno], eax
     
-    ;ret
+    jmp regreso_flujo_turnos
+    
+agregar_turno_dos:
+    mov eax, 1
+    add [turnos_jugador_dos], eax
 
-    mov ecx, [personaje_seleccionado]    ; ecx = índice de jugador actual
+    jmp regreso_flujo_turnos
+agregar_turno_tres:  
+    mov eax, 1
+    add [turnos_jugador_tres], eax
+
+    jmp regreso_flujo_turnos
+agregar_turno_cuatro:
+    mov eax, 1
+    add [turnos_jugador_cuatro], eax
+
+    jmp regreso_flujo_turnos
+agregar_turno_cinco:
+    mov eax, 1
+    add [turnos_jugador_cinco], eax
+
+    jmp regreso_flujo_turnos
+
+
+imprimir_mensaje_turno: 
+    mov ecx, 0    
 
 turno_jugador:
-
     movzx eax, byte [dado]
-    mov [movimiento], eax                ; Guarda el resultado de dado en [movimiento]
+    mov [movimiento], eax                
     mov [resultado_dado], eax
-    ; --- ACTUALIZAR EL REGISTRO DE LOS JUGADORES ---
 
-    
-    mov ebx, [registro_turnos_table + ecx*4]    
-    add [ebx], byte 1 ; Añade el resultado del dado en la dirección de ebx(tabla de registro)
-
-    ; mov eax, [ebx]
-    ; mov [posicion_jugador], eax
-
-    ; mov eax, [movimiento]
-
-    ;  ;movzx eax, byte [dado]
-    ; push dword[resultado_dado]
-    ; ;push dword[movimiento]
-    ; push formato_numero
-    ; call printf
-    ; add esp, 8   
-
-
-    ;movzx eax, byte [dado]
-    ;push dword[posicion_jugador]
-    ;push dword[movimiento]
-
-    ; todo bien :D
-    ; --- AVANZAR DE POSICIÓN ---
-    mov ebx, [movimiento_table + ecx*4]  
-    add [ebx], eax ; Añade el resultado del dado en la dirección de ebx(tabla de movimiento)
-    mov eax, [ebx]
-
-    push eax
-    push formato_numero
-    call printf
-    add esp, 8
-    ret ; todavia
-
-    mov eax, [ebx]
-    mov [posicion_jugador], eax
-    ; todo biennnn 2 
-
-    push dword[posicion_jugador]
-    push formato_opcion
-    call printf
-    add esp, 8
-    ret ; todavia esta en proceso
+    cmp ecx, 0
+    je agregar_movimiento_uno
+    cmp ecx, 1
+    je agregar_movimiento_dos
+    cmp ecx, 2
+    je agregar_movimiento_tres
+    cmp ecx, 3
+    je agregar_movimiento_cuatro
+    cmp ecx, 4
+    je agregar_movimiento_cinco
+regreso_flujo_movimientos:
+    cmp ecx, 0
+    je agregar_turno_uno
+    cmp ecx, 1
+    je agregar_turno_dos
+    cmp ecx, 2
+    je agregar_turno_tres
+    cmp ecx, 3
+    je agregar_turno_cuatro
+    cmp ecx, 4
+    je agregar_turno_cinco
+regreso_flujo_turnos:
 
     ; --- Obtener efecto de la casilla actual ---
-    mov edx, [ebx]                       ; edx = posición actual
+    mov edx, ebx ; la posicion actual del jugador                       ; edx = posición actual
     cmp edx, 99                          ; Posición actual <= casilla 100
     ja fuera_del_tablero                 ; Fuera del tablero
     movsx edx, byte [tablero + edx]      ; edx = efecto de la casilla
     
-    ;sub edx, 1
 
-    ; paso critico para la anicmacion
     cmp edx, 0
     jl animacion_skane
     cmp edx, 6
@@ -635,6 +615,7 @@ regreso_flujo:
     add esp, 4
 
     call imprimir_menu
+    
 
     ret ; todavia esta en proceso
 
@@ -661,35 +642,5 @@ fuera_del_tablero:  ; deberia ganar el juego
     jmp continuar
 
 fin:
-    push mensa_debug
-    call printf
-    add esp, 4
     ret ; todavia esta en proceso
-
-
-; ;╭∩╮(-_-)╭∩╮
-; tablero db 37, 0, 0, 10, 0, 0, 0, 21, 0, 0
-;         db 0, 0, 0, 0, 0, 0, -10, 0, 0, 0
-;         db 0, 0, 0, 16, 0, 0, 0, 0, 56, 0
-;         db 0, 0, 0, -22, 0, 0, 0, 0, 0, 0
-;         db 0, 0, 0, 0, 0, -21, 0, 0, 0, 0
-;         db 0, 0, 0, 0, 0, 0, 0, -43, 0, 0
-;         db 0, 19, 0, 0, 0, 0, 0, 0, 0, 0
-;         db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-;         db 0, 0, 0, 0, -20, 0, 0, 0, 0, -20
-;         db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-; ;╭∩╮(-_-)╭∩╮
-
-; gui_tablero db 'Ⅰ','⛚','⛚','Ⅱ','⛚','⛚','⛚','Ⅲ','⛚','⛚'
-;              db '⛚','⛚','⛚','⛚','⛚','⁎','⛚','⛚','⛚','⛚'
-;              db '⛚','⛚','⛚','Ⅳ','⛚','⛚','⛚','⛚','Ⅴ','⛚'
-;              db '⛚','⛚','⛚','★','⛚','⛚','⛚','⛚','Ⅰ','⛚'
-;              db '⛚','⛚','⛚','⛚','⛚','⁑','⛚','⛚','Ⅰ','⛚'
-;              db '⛚','Ⅵ','⛚','⛚','⛚','⁂','⛚','⛚','⛚','⛚'
-;              db '⛚','⛚','⛚','𖤐','⛚','⛚','⛚','⛚','⛚','⛚'
-;              db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
-;              db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
-;              db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
-;              db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
-;              db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
 
