@@ -44,10 +44,14 @@ generar_dado:
 
 section .data
     ; Número total de jugadores 
-    personajes dd 4
+    personajes dd 0
 
-    ; Índice del jugador actual (inicia en 0)
-    personaje_seleccionado dd 0
+    ;Representaciones de los jugadores
+    jugador_uno dd "𝟭",0
+    jugador_dos dd "𝟮",0
+    jugador_tres dd "𝟯",0
+    jugador_cuatro dd "𝟰",0
+    jugador_cinco dd "𝟱",0
 
     ; Registro de los movimientos de los jugadores
     registro_pj1 dd 0
@@ -73,16 +77,10 @@ section .data
     ; Tablas para acceso según jugador
     registro_table dd registro_pj1, registro_pj2, registro_pj3, registro_pj4, registro_pj5
     movimiento_table dd movimiento_pj1, movimiento_pj2, movimiento_pj3, movimiento_pj4, movimiento_pj5
+    lista_jugadores dd jugador_uno, jugador_dos, jugador_tres, jugador_cuatro, jugador_cinco
 
     ; Limpiara la consola, es un uso estetico
     limpiar_consola db "clear", 0
-
-    ;Representaciones de los jugadores
-    jugador_uno dd "𝟭",0
-    jugador_dos dd "𝟮",0
-    jugador_tres dd "𝟯",0
-    jugador_cuatro dd "𝟰",0
-    jugador_cinco dd "𝟱",0
 
     mensaje_menu_seleccion_jugadores db "Bienvenido al Menu de Seleecion",10, 0
     opciones_menu_seleccion db "(1) - Un jugador",10,"(2) - Dos jugadores",10,"(3) - Tres jugadores",10,"(4) - Cuatro jugadores",10,"(5) - Cinco jugadores",10,10,0
@@ -410,7 +408,7 @@ turno_jugador:
     mov eax, [dado]
     mov [movimiento], eax                ; Guarda el resultado de dado en [movimiento]
 
-    mov ecx, [personaje_seleccionado]    ; ecx = índice de jugador actual
+    mov ecx, [lista_jugadores]    ; ecx = índice de jugador actual
 
     ; --- ACTUALIZAR EL REGISTRO DE LOS JUGADORES ---
     mov ebx, [registro_table + ecx*4]    
@@ -454,28 +452,8 @@ fin:
     ret ; todavia esta en proceso
 
 
-; ;╭∩╮(-_-)╭∩╮
-; tablero db 37, 0, 0, 10, 0, 0, 0, 21, 0, 0
-;         db 0, 0, 0, 0, 0, 0, -10, 0, 0, 0
-;         db 0, 0, 0, 16, 0, 0, 0, 0, 56, 0
-;         db 0, 0, 0, -22, 0, 0, 0, 0, 0, 0
-;         db 0, 0, 0, 0, 0, -21, 0, 0, 0, 0
-;         db 0, 0, 0, 0, 0, 0, 0, -43, 0, 0
-;         db 0, 19, 0, 0, 0, 0, 0, 0, 0, 0
-;         db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-;         db 0, 0, 0, 0, -20, 0, 0, 0, 0, -20
-;         db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-; ;╭∩╮(-_-)╭∩╮
+;movimiento_tablero:
+    ;mov [movimiento_falso], tablero[[ebx]] ; [movimiento_falso] = se guardara la posicion de los jugadores para luego pasarlo a 0
 
-; gui_tablero db 'Ⅰ','⛚','⛚','Ⅱ','⛚','⛚','⛚','Ⅲ','⛚','⛚'
-;              db '⛚','⛚','⛚','⛚','⛚','⁎','⛚','⛚','⛚','⛚'
-;              db '⛚','⛚','⛚','Ⅳ','⛚','⛚','⛚','⛚','Ⅴ','⛚'
-;              db '⛚','⛚','⛚','★','⛚','⛚','⛚','⛚','Ⅰ','⛚'
-;              db '⛚','⛚','⛚','⛚','⛚','⁑','⛚','⛚','Ⅰ','⛚'
-;              db '⛚','Ⅵ','⛚','⛚','⛚','⁂','⛚','⛚','⛚','⛚'
-;              db '⛚','⛚','⛚','𖤐','⛚','⛚','⛚','⛚','⛚','⛚'
-;              db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
-;              db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
-;              db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
-;              db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
-;              db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
+    ;mov tablero[[ebx]],lista_jugadores[ecx]  ; tablero[[ebx]] = posicion en el tablero en el que esta el jugador     ecx = el jugador(hay que añadirle el caracter)
+
