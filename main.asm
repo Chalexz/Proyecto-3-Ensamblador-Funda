@@ -440,7 +440,7 @@ continuar:
     xor ecx, ecx                          ; volver al jugador 0 si todos jugaron
 
 seguir:
-    mov [personaje_seleccionado], ecx
+    mov [lista_jugadores], ecx
     ret
 
 fuera_del_tablero:
@@ -450,10 +450,3 @@ fuera_del_tablero:
 
 fin:
     ret ; todavia esta en proceso
-
-
-;movimiento_tablero:
-    ;mov [movimiento_falso], tablero[[ebx]] ; [movimiento_falso] = se guardara la posicion de los jugadores para luego pasarlo a 0
-
-    ;mov tablero[[ebx]],lista_jugadores[ecx]  ; tablero[[ebx]] = posicion en el tablero en el que esta el jugador     ecx = el jugador(hay que añadirle el caracter)
-
