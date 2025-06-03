@@ -55,4 +55,4 @@
 - Ejecutar el archivo main.asm (./run.sh main.asm)
 
 
-# Se intento 
+# Se debe de ejecutar main
