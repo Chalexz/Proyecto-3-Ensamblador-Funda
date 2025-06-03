@@ -53,3 +53,6 @@
 ## Ejecutar el programa
 - Tener el docker abierto
 - Ejecutar el archivo main.asm (./run.sh main.asm)
+
+
+# Se intento 
