@@ -44,24 +44,20 @@ generar_dado:
 
 section .data
     ; Número total de jugadores 
-    personajes dd 0
+    personajes dd 4
 
-    ;Representaciones de los jugadores
-    jugador_uno dd "𝟭",0
-    jugador_dos dd "𝟮",0
-    jugador_tres dd "𝟯",0
-    jugador_cuatro dd "𝟰",0
-    jugador_cinco dd "𝟱",0
+    ; Índice del jugador actual (inicia en 0)
+    personaje_seleccionado dd 0
 
     ; Registro de los movimientos de los jugadores
-    registro_pj1 dd 0
-    registro_pj2 dd 0
-    registro_pj3 dd 0
-    registro_pj4 dd 0
-    registro_pj5 dd 0
+    registro_turno_pj1 dd 0
+    registro_turno_pj2 dd 0
+    registro_turno_pj3 dd 0
+    registro_tunro_pj4 dd 0
+    registro_tunro_pj5 dd 0
 
     ; Posición actual de cada jugador en el tablero
-    movimiento_pj1 dd 0
+    movimiento_pj1 dd 1
     movimiento_pj2 dd 0
     movimiento_pj3 dd 0
     movimiento_pj4 dd 0
@@ -74,22 +70,99 @@ section .data
     ; Resultado del dado actual
     movimiento dd 0
 
+    resultado_dado db 0
+
+
     ; Tablas para acceso según jugador
-    registro_table dd registro_pj1, registro_pj2, registro_pj3, registro_pj4, registro_pj5
+    ;registro_turnos_table dd registro_turno_pj1, registro_turno_pj2, registro_turno_pj3, registro_turno_pj4, registro_turno_pj5
     movimiento_table dd movimiento_pj1, movimiento_pj2, movimiento_pj3, movimiento_pj4, movimiento_pj5
-    lista_jugadores dd jugador_uno, jugador_dos, jugador_tres, jugador_cuatro, jugador_cinco
 
     ; Limpiara la consola, es un uso estetico
     limpiar_consola db "clear", 0
+
+    ; Representaciones de los jugadores
+    jugador_uno dd "𖨆",0
+    jugador_dos dd "ඩ",0
+    jugador_tres dd "☹",0
+    jugador_cuatro dd "☺",0
+    jugador_cinco dd "ⶆ",0
+
+
+    ; Registro de turno para cada jugador
+    turnos_jugador_uno db 0
+    turnos_jugador_dos db 0
+    turnos_jugador_tres db 0
+    turnos_jugador_cuatro db 0 
+    turnos_jugador_cinco db 0
+
+    registro_turnos_table dd turnos_jugador_uno, turnos_jugador_dos, turnos_jugador_tres, turnos_jugador_cuatro, turnos_jugador_cinco
 
     mensaje_menu_seleccion_jugadores db "Bienvenido al Menu de Seleecion",10, 0
     opciones_menu_seleccion db "(1) - Un jugador",10,"(2) - Dos jugadores",10,"(3) - Tres jugadores",10,"(4) - Cuatro jugadores",10,"(5) - Cinco jugadores",10,10,0
     ingresar_cantidad_jugadores db "Ingrese el numero de la opcion que desea realizar: ",0
     formato_opcion db "%d",0
+    formato_numero db "%d",10,0
     mensaje_opcion_invalida db 10,"Error: La opcion ingresada es invalida!",10,10,0
 
     mensaje_tirar_dado db "Presione 'Enter' para tirar el dado (R para reiniciar la partida): ",0
     opcion_invalida_dado db 10,"Error: Por favor presione 'Enter' o 'R'",10,0
+
+    mensaje_avance db "El jugador  %s# avanza: '%d' casillas!",10,0
+    mensaje_resultado_dado db "El resultado del dado es: %d!!!",10,0
+    mensaje_nueva_posicion db "La nueva posicion del jugador <insertar jugador> es la casilla: %d!!!",10,0
+
+
+
+    snake01 db"                 /^\/^\",10
+            db"               _|__|  O|",10
+            db"      \/     /~     \_/ \",10
+            db"       \____|__________/  \",10
+            db"              \_______      \",10
+            db"                      `\     \",10, 0
+
+    snake02 db"                 /^\/^\",10
+            db"               _|__|  -|",10
+            db"      \/     /~     \_/ \",10
+            db"       \____|__________/  \",10
+            db"              \_______      \",10
+            db"                      `\     \",10, 0
+
+    escalera01 db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"           \ o /",10
+               db"             |",10
+               db"            / \",10,0
+
+
+    escalera02 db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"           \ o /",10
+               db"             |",10
+               db"            / \",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10,0
+
+    escalera03 db"            ╬═╬",10
+               db"           \ o /",10
+               db"             |",10
+               db"            / \",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10
+               db"            ╬═╬",10,0
 
     dado_1 db "  .-------.",10
            db " /   o   /|",10
@@ -140,7 +213,7 @@ section .data
            db "'-------'",10,0
     
     ;╭∩╮(-_-)╭∩╮
-    tablero db 37, 0, 0, 10, 0, 0, 0, 21, 0, 0
+    tablero db 37,0, 0, 10, 0, 0, 0, 21, 0, 0  ;[i][j] 
             db 0, 0, 0, 0, 0, 0, -10, 0, 0, 0
             db 0, 0, 0, 16, 0, 0, 0, 0, 56, 0
             db 0, 0, 0, -22, 0, 0, 0, 0, 0, 0
@@ -150,22 +223,23 @@ section .data
             db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             db 0, 0, 0, 0, -20, 0, 0, 0, 0, -20
             db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-            
+
     ;╭∩╮(-_-)╭∩╮
-    gui_tablero db 'Ⅰ','⛚','⛚','Ⅱ','⛚','⛚','⛚','Ⅲ','⛚','⛚'
-                db '⛚','⛚','⛚','⛚','⛚','⁎','⛚','⛚','⛚','⛚'
-                db '⛚','⛚','⛚','Ⅳ','⛚','⛚','⛚','⛚','Ⅴ','⛚'
-                db '⛚','⛚','⛚','★','⛚','⛚','⛚','⛚','Ⅰ','⛚'
-                db '⛚','⛚','⛚','⛚','⛚','⁑','⛚','⛚','Ⅰ','⛚'
-                db '⛚','Ⅵ','⛚','⛚','⛚','⁂','⛚','⛚','⛚','⛚'
-                db '⛚','⛚','⛚','𖤐','⛚','⛚','⛚','⛚','⛚','⛚'
-                db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
-                db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
-                db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
-                db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
-                db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
+    gui_tablero db "  Ⅰ  ","  ⛚  ","  ⛚  ","  Ⅱ  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  Ⅲ  ","  ⛚  ",10,10
+                db "  ⛚  ","  ⛚  ","  ⛚  ","  Ⅱ  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ",10,10
+                db "  Ⅳ  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  Ⅴ  ","  ⛚  ","  ⛚  ",10,10
+                db "  Ⅲ  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  Ⅰ  ","  ⛚  ","  ⛚  ",10,10
+                db "  Ⅳ  ","  ⛚  ","  ⛚  ","  ⛚  ","  Ⅵ  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ",10,10
+                db "  Ⅶ  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ",10,10
+                db "  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  Ⅶ  ","  ⛚  ","  ⛚  ","  ⛚  ",10,10
+                db "  Ⅷ  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ",10,10
+                db "  ⛚  ","  ⛚  ","  ⛚  ","  Ⅴ  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ",10,10
+                db "  Ⅷ  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ","  ⛚  ",10,10,0
+                ;db 0
 
     lista_dados dd dado_1, dado_2, dado_3, dado_4, dado_5, dado_6 
+    lista_skane dd snake01, snake02, snake01, snake02
+    lista_dellar dd escalera01, escalera02, escalera03
 
     mensa_debug db "Prueba",10,0
     mensa_debug2 db "Prueba2",10,0
@@ -174,6 +248,9 @@ section .data
 section .bss
     opcion resb 1
     ultima_cara_dado resb 1
+    posicion_jugador resb 1
+
+
 
 
 section .text
@@ -246,7 +323,7 @@ vaciar_buffer:
     cmp al, 0x0A
     jne vaciar_buffer
 
-    ret
+    ret 
 
 
 imprimir_opcion_invalida_menu:
@@ -282,7 +359,6 @@ tirar_dado:
 
     mov esi, lista_dados
     mov ecx, 6
-    mov ebx,0
 
 animacion_dado:
     ; Guarda ECX en la pila para preservarlo
@@ -308,19 +384,75 @@ animacion_dado:
     ; add esp, 4
 
     call limpiar_cmd
-    push mensa_debug
+    jmp indentificar_cara_dado
+    
+animacion_skane:
+
+    mov esi, lista_skane
+    mov ecx, 4
+
+siguiente_animacion_skane: 
+    push ecx    
+
+    call limpiar_cmd          
+
+    push dword[esi]
     call printf
     add esp, 4
+    add esi, 4
+    
+    push dword 1
+    call sleep
+    add esp, 4
+   
+    pop ecx     
+
+    loop siguiente_animacion_skane
+    
+    jmp regreso_flujo
+
+animacion_dellar:
+
+    mov esi, lista_dellar
+    mov ecx, 3
+
+siguiente_animacion_dellar: 
+    push ecx    
+
+    call limpiar_cmd          
+
+    push dword[esi]
+    call printf
+    add esp, 4
+    add esi, 4
+    
+    push dword 1
+    call sleep
+    add esp, 4
+   
+    pop ecx     
+
+    loop siguiente_animacion_dellar
+    
+    jmp regreso_flujo
+
+imprimir_menu:
+    push gui_tablero
+    call printf
+    add esp, 4
+
+    push resultado_dado
+    push mensaje_resultado_dado
+    call printf
+    add esp, 8
+
+
+
+
+
 
 
 indentificar_cara_dado:
-    ; push mensa_debug2
-    ; call printf
-    ; add esp, 4
-    push jugador_uno
-    call printf
-    add esp, 4
-
     call generar_dado
 
     ; movzx eax, byte [dado]
@@ -351,6 +483,7 @@ indentificar_cara_dado:
     call printf
     add esp, 4
 
+    jmp imprimir_mensaje_turno
 
 
 cara_uno:
@@ -361,7 +494,9 @@ cara_uno:
     call printf
     add esp, 4
 
-    ret
+    jmp imprimir_mensaje_turno
+
+
 cara_dos:
     mov eax, dado_2
     mov [ultima_cara_dado], eax   
@@ -369,7 +504,9 @@ cara_dos:
     push dword[ultima_cara_dado]
     call printf
     add esp, 4
-    ret
+    jmp imprimir_mensaje_turno
+
+
 cara_tres:
     mov eax, dado_3
     mov [ultima_cara_dado], eax   
@@ -377,7 +514,9 @@ cara_tres:
     push dword[ultima_cara_dado]
     call printf
     add esp, 4
-    ret
+    
+    jmp imprimir_mensaje_turno
+
 
 cara_cuatro:
     mov eax, dado_4
@@ -386,7 +525,9 @@ cara_cuatro:
     push dword[ultima_cara_dado]
     call printf
     add esp, 4
-    ret
+    jmp imprimir_mensaje_turno
+
+
 cara_cinco:
     mov eax, dado_5
     mov [ultima_cara_dado], eax   
@@ -395,37 +536,107 @@ cara_cinco:
     call printf
     add esp, 4
 
- fin_animacion_dado:
-     ret
 
+imprimir_mensaje_turno: 
+   
 
+    ; cmp ecx, 0
+    ; je total_turnos_jugador_uno
+    ; cmp ecx, 1
+    ; je total_turnos_jugador_uno
+    ; cmp ecx, 2
+    ; je total_turnos_jugador_uno
+    ; cmp ecx, 3
+    ; je total_turnos_jugador_uno
+    ; cmp ecx, 4
+    ; je total_turnos_jugador_uno
+    ; push ecx
 
-;empiza lo lindo
+    ; push formato_opcion
+    ; call printf
+    ; add esp, 4
+    
+    ;ret
+
+    mov ecx, [personaje_seleccionado]    ; ecx = índice de jugador actual
+
 turno_jugador:
 
-    call generar_dado
-
-    mov eax, [dado]
+    movzx eax, byte [dado]
     mov [movimiento], eax                ; Guarda el resultado de dado en [movimiento]
-
-    mov ecx, [lista_jugadores]    ; ecx = índice de jugador actual
-
+    mov [resultado_dado], eax
     ; --- ACTUALIZAR EL REGISTRO DE LOS JUGADORES ---
-    mov ebx, [registro_table + ecx*4]    
-    add [ebx], eax ; Añade el resultado del dado en la dirección de ebx(tabla de registro)
 
+    
+    mov ebx, [registro_turnos_table + ecx*4]    
+    add [ebx], byte 1 ; Añade el resultado del dado en la dirección de ebx(tabla de registro)
+
+    ; mov eax, [ebx]
+    ; mov [posicion_jugador], eax
+
+    ; mov eax, [movimiento]
+
+    ;  ;movzx eax, byte [dado]
+    ; push dword[resultado_dado]
+    ; ;push dword[movimiento]
+    ; push formato_numero
+    ; call printf
+    ; add esp, 8   
+
+
+    ;movzx eax, byte [dado]
+    ;push dword[posicion_jugador]
+    ;push dword[movimiento]
+
+    ; todo bien :D
     ; --- AVANZAR DE POSICIÓN ---
     mov ebx, [movimiento_table + ecx*4]  
     add [ebx], eax ; Añade el resultado del dado en la dirección de ebx(tabla de movimiento)
+    mov eax, [ebx]
+
+    push eax
+    push formato_numero
+    call printf
+    add esp, 8
+    ret ; todavia
+
+    mov eax, [ebx]
+    mov [posicion_jugador], eax
+    ; todo biennnn 2 
+
+    push dword[posicion_jugador]
+    push formato_opcion
+    call printf
+    add esp, 8
+    ret ; todavia esta en proceso
 
     ; --- Obtener efecto de la casilla actual ---
     mov edx, [ebx]                       ; edx = posición actual
     cmp edx, 99                          ; Posición actual <= casilla 100
     ja fuera_del_tablero                 ; Fuera del tablero
     movsx edx, byte [tablero + edx]      ; edx = efecto de la casilla
+    
+    ;sub edx, 1
 
+    ; paso critico para la anicmacion
+    cmp edx, 0
+    jl animacion_skane
+    cmp edx, 6
+    jg animacion_dellar
+
+regreso_flujo:
     ; --- Aplicar efecto de casilla ---
     add [ebx], edx
+
+    call limpiar_cmd
+    
+    push dword 1
+    call sleep
+    add esp, 4
+
+    call imprimir_menu
+
+    ret ; todavia esta en proceso
 
     ; --- JUGADOR MENOR QUE 0 ---
     cmp dword [ebx], 0
@@ -440,13 +651,45 @@ continuar:
     xor ecx, ecx                          ; volver al jugador 0 si todos jugaron
 
 seguir:
-    mov [lista_jugadores], ecx
+    mov [personaje_seleccionado], ecx
     ret
 
-fuera_del_tablero:
+fuera_del_tablero:  ; deberia ganar el juego
     ; Si se pasa del tablero, lo dejamos en la última casilla
-    mov dword [ebx], 99
+    mov dword [ebx], 99 ; casilla 100
+    ; pasa al siguente jugador
     jmp continuar
 
 fin:
+    push mensa_debug
+    call printf
+    add esp, 4
     ret ; todavia esta en proceso
+
+
+; ;╭∩╮(-_-)╭∩╮
+; tablero db 37, 0, 0, 10, 0, 0, 0, 21, 0, 0
+;         db 0, 0, 0, 0, 0, 0, -10, 0, 0, 0
+;         db 0, 0, 0, 16, 0, 0, 0, 0, 56, 0
+;         db 0, 0, 0, -22, 0, 0, 0, 0, 0, 0
+;         db 0, 0, 0, 0, 0, -21, 0, 0, 0, 0
+;         db 0, 0, 0, 0, 0, 0, 0, -43, 0, 0
+;         db 0, 19, 0, 0, 0, 0, 0, 0, 0, 0
+;         db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+;         db 0, 0, 0, 0, -20, 0, 0, 0, 0, -20
+;         db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+; ;╭∩╮(-_-)╭∩╮
+
+; gui_tablero db 'Ⅰ','⛚','⛚','Ⅱ','⛚','⛚','⛚','Ⅲ','⛚','⛚'
+;              db '⛚','⛚','⛚','⛚','⛚','⁎','⛚','⛚','⛚','⛚'
+;              db '⛚','⛚','⛚','Ⅳ','⛚','⛚','⛚','⛚','Ⅴ','⛚'
+;              db '⛚','⛚','⛚','★','⛚','⛚','⛚','⛚','Ⅰ','⛚'
+;              db '⛚','⛚','⛚','⛚','⛚','⁑','⛚','⛚','Ⅰ','⛚'
+;              db '⛚','Ⅵ','⛚','⛚','⛚','⁂','⛚','⛚','⛚','⛚'
+;              db '⛚','⛚','⛚','𖤐','⛚','⛚','⛚','⛚','⛚','⛚'
+;              db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
+;              db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
+;              db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
+;              db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
+;              db '⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚','⛚'
+
