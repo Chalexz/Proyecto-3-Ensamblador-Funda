@@ -1,5 +1,0 @@
-"cd" = cambiar de directorio
-    ej: cd + documento al que que quiera ir 
-"ls" = lista de archivos | Equivalente al explorador de archivos
-"code ." = abre el assembly en el editor de código
-ls
